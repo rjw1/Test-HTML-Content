@@ -37,7 +37,7 @@ use vars qw( $tidy );
   xpath_ok no_xpath xpath_count
   );
 
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 my $Test = Test::Builder->new;
 
@@ -273,7 +273,7 @@ sub __get_node_tree {
 
 sub __get_node_content {
   my ($node,$name) = @_;
-  
+
   if ($name eq '_content') {
     return $node->textContent()
   } else {

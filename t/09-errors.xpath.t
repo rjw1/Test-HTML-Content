@@ -16,6 +16,8 @@ BEGIN {
   use_ok('Test::HTML::Content');
 };
 
+SKIP: {
+
 if (! $Test::HTML::Content::can_xpath) {
   skip "Need XPath functionality to test it", 6;
   exit;
@@ -81,3 +83,4 @@ test_diag(q{Got},
 xpath_count($HTML,'//p',2,"no XPath results found");
 test_test("Too many hits get reported");
 
+};
