@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
-use Test::More tests => 15;
+use Test::More tests => 16;
 
 use_ok('Test::HTML::Content');
 
@@ -32,3 +32,5 @@ no_comment('<html>Mail me at (c) 2002 corion@cpan.org some address</html>',
 no_comment('<html>Mail me at <a href="corion@cpan.org">corion@cpan.org</a> some address</html>',
     'corion@cpan.org', "Comments are not found if not there");
 no_comment('<html>Mail me at <a href="corion@cpan.org">foo<!-- corion@cpan.org --><!-- nospam@cpan.org --></a> some address</html>', qr'\@cpan\.com', "RE-Comments are found correctly");
+
+no_comment('<html>Mail me at <a href="corion@cpan.org">foo<!-- corion@[c]pan.org --><!-- nospam@cpan.org --></a> some address</html>', qr'corion\@[c]pan\.org', "RE-Comments not stringified");

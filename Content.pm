@@ -15,20 +15,6 @@ use HTML::TokeParser;
 
 @ISA = qw(Exporter);
 
-# TODO:
-# * Implement a cache for the last parsed tree / token sequence
-# * Possibly diag() the row/line number for failing tests
-# * Create a function (and a syntax) to inspect tag text contents
-#   (possibly a special attribute) ? Will not happen until HTML::TreeBuilder is used
-# * Consider HTML::TableExtractor for easy parsing of
-#   tables into arrays
-# * Find syntax for easily specifying relationships
-# * Consider HTML::TreeBuilder for more advanced structural checks
-# * Have a way of declaring "the link that shows 'foo' points to http://www.foo.com/"
-#   (which is, after all, a way to check a tags contents, and thus won't happen
-#   until HTML::TreeBuilder is used)
-# ? Allow RE instead of plain strings in the functions (for tags themselves)
-
 # DONE:
 # * use Test::Builder;
 # * Add comment_ok() method
@@ -45,9 +31,10 @@ use HTML::TokeParser;
   tag_ok no_tag tag_count
   comment_ok no_comment comment_count
   has_declaration no_declaration
+  text_ok no_text text_count
   );
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 my $Test = Test::Builder->new;
 use vars qw($HTML_PARSER_StripsTags);
@@ -97,38 +84,117 @@ sub __match_comment {
 sub __count_comments {
   my ($HTML,$comment) = @_;
   my $result = 0;
+  my $seen = [];
 
   my $p = HTML::TokeParser->new(\$HTML);
   my $token;
   while ($token = $p->get_token) {
     my ($type,$text) = @$token;
-    if ($type eq "C" && __match_comment($text,$comment)) {
-      $result ++;
+    if ($type eq "C") {
+      push @$seen, $token->[1];
+      $result++ if __match_comment($text,$comment);
     };
   };
 
-  return $result;
+  return ($result, $seen);
+};
+
+sub __output_diag {
+  my ($cond,$match,$descr,$kind,$name,$seen) = @_;
+  
+  local $Test::Builder::Level = 2;
+
+  unless ($Test->ok($cond,$name)) {
+    if (@$seen) {
+      $Test->diag( "Saw '$_'" ) for @$seen;
+    } else {
+      $Test->diag( "No $descr found at all" );
+    };
+    $Test->diag( "Expected $descr like '$match'" );
+  };
 };
 
 sub comment_ok {
   my ($HTML,$comment,$name) = @_;
-  my $result = __count_comments($HTML,$comment);
+  my ($result,$seen) = __count_comments($HTML,$comment);
 
-  $Test->cmp_ok($result,'>',0,$name);
+  __output_diag($result > 0,$comment,"at least one comment","comment",$name,$seen);
+  
+  $result;
 };
 
 sub no_comment {
   my ($HTML,$comment,$name) = @_;
-  $comment =~ s/^\s*(.*?)\s*$/$1/;
-  my $result = __count_comments($HTML,$comment);
-
-  $Test->is_num($result,0,$name);
+  my ($result,$seen) = __count_comments($HTML,$comment);
+  
+  __output_diag($result == 0,$comment,"no comment","comment",$name,$seen);
+  
+  $result;
 };
 
 sub comment_count {
   my ($HTML,$comment,$count,$name) = @_;
-  my $result = __count_comments($HTML,$comment);
-  $Test->is_num($result,$count,$name);
+  my ($result,$seen) = __count_comments($HTML,$comment);
+  
+  __output_diag($result == $count,$comment,"exactly $count comments","comment",$name,$seen);
+  
+  return $result;
+};
+
+sub __match_text {
+  my ($text,$template) = @_;
+  unless (ref $template eq "Regexp") {
+    $text =~ s/^\s*(.*?)\s*$/$1/;
+    $template =~ s/^\s*(.*?)\s*$/$1/;
+  };
+  return __dwim_compare($text, $template);
+};
+
+sub __count_text {
+  my ($HTML,$text) = @_;
+  my $result = 0;
+  my $seen = [];
+
+  my $p = HTML::TokeParser->new(\$HTML);
+  $p->unbroken_text(1);
+  
+  my $token;
+  while ($token = $p->get_token) {
+    my ($type,$foundtext) = @$token;
+    if ($type eq "T") {
+      push @$seen, $token->[1];
+      $result++ if __match_text($foundtext,$text);
+    };
+  };
+
+  return $result,$seen;
+};
+
+sub text_ok {
+  my ($HTML,$text,$name) = @_;
+  my ($result,$seen) = __count_text($HTML,$text);
+
+  __output_diag($result > 0,$text,"at least one text element","text",$name,$seen);
+  
+  $result;
+};
+
+sub no_text {
+  my ($HTML,$text,$name) = @_;
+  my ($result,$seen) = __count_text($HTML,$text);
+  
+  __output_diag($result == 0,$text,"no text elements","text",$name,$seen);
+
+  $result;  
+};
+
+sub text_count {
+  my ($HTML,$text,$count,$name) = @_;
+  my ($result,$seen) = __count_text($HTML,$text);
+
+  __output_diag($result == $count,$text,"exactly $count elements","text",$name,$seen);
+  
+  $result;
 };
 
 sub __match {
@@ -228,17 +294,19 @@ sub no_tag {
 
 sub link_count {
   my ($HTML,$link,$count,$name) = @_;
-  #my ($HTML,$tag,$attrref,$count,$name) = @_;
+  local $Test::Builder::Level = 2;
   return tag_count($HTML,"a",{href => $link},$count,$name);
 };
 
 sub link_ok {
   my ($HTML,$link,$name) = (@_);
+  local $Test::Builder::Level = 2;
   return tag_ok($HTML,'a',{ href => $link },$name);
 };
 
 sub no_link {
   my ($HTML,$link,$name) = (@_);
+  local $Test::Builder::Level = 2;
   return no_tag($HTML,'a',{ href => $link },$name);
 };
 
@@ -274,30 +342,18 @@ sub has_declaration {
   my ($HTML,$declaration,$name) = @_;
   my ($result,$seen) = __count_declarations($HTML,$declaration);
 
-  unless ($Test->ok($result == 1,$name)) {
-    # Output what we saw to faciliate debugging
-    if (@$seen) {
-      $Test->diag( "Saw '$_'" ) for @$seen;
-    } else {
-      $Test->diag( "No declaration found" );
-    };
-    $Test->diag( "Expected something like '$declaration'" );
-  };
+  __output_diag($result == 1,$declaration,"exactly one declaration","declaration",$name,$seen);
+  
+  $result;
 };
 
 sub no_declaration {
   my ($HTML,$declaration,$name) = @_;
   my ($result,$seen) = __count_declarations($HTML,$declaration);
 
-  unless ($Test->ok($result == 0,$name)) {
-    # Output what we saw to faciliate debugging
-    if (@$seen) {
-      $Test->diag( "Saw '$_'" ) for @$seen;
-    } else {
-      $Test->diag( "No declaration found" );
-    };
-    $Test->diag( "Expected to find nothing like '$declaration'" );
-  };
+  __output_diag($result == 0,$declaration,"no declaration","declaration",$name,$seen);
+  
+  $result;
 };
 
 1;
@@ -310,21 +366,26 @@ Test::HTML::Content - Perl extension for testing HTML output
 
 =head1 SYNOPSIS
 
-  use Test::HTML::Content;
+  use Test::HTML::Content( tests => 10 );
 
   $HTML = "<html><body>
+           <img src='http://www.perl.com/camel.png' alt='camel'>
            <a href='http://www.perl.com'>Perl</a>
+           <img src='http://www.perl.com/camel.png' alt='more camel'>
            <!--Hidden message--></body></html>";
 
   link_ok($HTML,"http://www.perl.com","We link to Perl");
   no_link($HTML,"http://www.pearl.com","We have no embarassing typos");
-  no_link($HTML,qr"http://[a-z]+\.perl.com","We have a link to perl.com");
+  link_ok($HTML,qr"http://[a-z]+\.perl.com","We have a link to perl.com");
 
   tag_ok($HTML,"img", {src => "http://www.perl.com/camel.png"},
                         "We have an image of a camel on the page");
   tag_count($HTML,"img", {src => "http://www.perl.com/camel.png"}, 2,
                         "In fact, we have exactly two camel images on the page");
   no_tag($HTML,"blink",{}, "No annoying blink tags ..." );
+
+  # We can check the textual contents
+  text_ok($HTML,"Perl");
 
   # We can also check the contents of comments
   comment_ok($HTML,"Hidden message");
@@ -368,6 +429,7 @@ Exports the bunch of test functions :
 
   link_ok() no_link() link_count()
   tag_ok() no_tag() tag_count()
+  text_ok no_text() text_count()
   comment_ok() no_comment() comment_count()
   has_declaration() no_declaration()
 
@@ -378,18 +440,30 @@ This will make running many tests over the same, large HTML stream relatively
 slow. I plan to add a simple minded caching mechanism that keeps the most
 recent HTML stream in a cache.
 
+=head2 BUGS
+
+Currently, if there is text split up by comments, the text will be seen
+as two separate entities, so the following dosen't work :
+
+  is_text( "Hello<!-- brave new--> World", "Hello World" );
+  
+Whether this is a real bug or not, I don't know at the moment - most likely,
+I'll modify text_ok() and siblings to ignore embedded comments.
+
 =head2 TODO
 
 My things on the todo list for this module. Patches are welcome !
 
-=over4
+=over 4
+
+=item * Refactor the code to fold some of the internal routines
 
 =item * Implement a cache for the last parsed tree / token sequence
 
 =item * Possibly diag() the row/line number for failing tests
 
 =item * Create a function (and a syntax) to inspect tag text contents without
-reimplementing XSLT. ?possibly a special attribute? Will not happen 
+reimplementing XSLT. ?possibly a special attribute? Will not happen
 until HTML::TreeBuilder is used
 
 =item * Consider HTML::TableExtractor for easy parsing of tables into arrays

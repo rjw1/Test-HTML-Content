@@ -8,3 +8,6 @@ t/2.tags.t
 t/3.links.t
 t/4.comments.t
 t/5.doctype.t
+t/6.text.t
+t/98.examples.t
+t/99.pod.t

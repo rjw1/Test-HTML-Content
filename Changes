@@ -3,9 +3,17 @@ Revision history for Perl extension Test::HTML::Content.
 0.01  Wed Sep 18 13:53:54 2002
   - original version; created by h2xs 1.20 with options
     -X Test::HTML
-0.02  Sun Sep 23 2002
+0.02  Sun Sep 22 2002
   - Renamed from Test::HTML to Test::HTML::Content
   - Added warnings for the module again, if available
-  - Fixed inconsistencies between usage of 
+  - Fixed inconsistencies between usage of
     HTML::Parser v2 and HTML::Parser v3 (as displayed through
     HTML::TokeParser)
+0.03  Mon Sep 23 2002    
+  - Fixed Pod (Thanks to Andy Lester)
+  - Added a test for the synopsis (Thanks to Andy Lester)
+  - Added a test for Pod consistency (Thanks to Andy Lester and brian d foy)
+  - Added text_ok(), no_text() and text_count()
+  - Fixed reporting of errors to the correct level. Errors now
+    get reported in your test file instead of somewhere within
+    Content.pm
