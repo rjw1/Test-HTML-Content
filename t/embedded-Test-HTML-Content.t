@@ -36,7 +36,7 @@ eval q{
   my $example = sub {
     local $^W = 0;
 
-#line 595 lib/Test/HTML/Content.pm
+#line 598 lib/Test/HTML/Content.pm
 
   $HTML = "<html><title>A test page</title><body><p>Home page</p>
            <img src='http://www.perl.com/camel.png' alt='camel'>
@@ -81,7 +81,7 @@ eval q{
 
   }
 };
-is($@, '', "example from line 595");
+is($@, '', "example from line 598");
 
     undef $main::_STDOUT_;
     undef $main::_STDERR_;

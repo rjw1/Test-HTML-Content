@@ -4,7 +4,7 @@ use Test::More;
 use vars qw(%modules);
 BEGIN {
   $modules{pureperl} = \&run_pureperl;
-  eval { require XML::XPath; $modules{xpath} = \&run_xpath };
+  eval { require XML::XPath; $XML::XPath::VERSION >= 1.13 and $modules{xpath} = \&run_xpath };
   eval { require XML::LibXML; $modules{libxml} = \&run_libxml };
 };
 
@@ -24,19 +24,19 @@ sub main::runtests {
 sub run_libxml {
   my ($count,$code) = @_;
   Test::HTML::Content::install_libxml();
-  $code->();
+  $code->('XML::LibXML');
 };
 
 sub run_xpath {
   my ($count,$code) = @_;
   Test::HTML::Content::install_xpath();
-  $code->();
+  $code->('XML::XPath');
 };
 
 sub run_pureperl {
   my ($count,$code) = @_;
   Test::HTML::Content::install_pureperl();
-  $code->();
+  $code->('PurePerl');
 };
 
 1;

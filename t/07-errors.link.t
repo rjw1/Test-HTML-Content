@@ -18,7 +18,7 @@ sub run {
   # Test that each exported function fails as documented
   test_out("not ok 1 - Link failure (no links)");
   test_fail(+8);
-  if ($Test::HTML::Content::can_xpath) {
+  if ($Test::HTML::Content::can_xpath eq 'XML::LibXML') {
     test_diag("Invalid HTML:","");
   } else {
     test_diag("Expected to find at least one <a> tag(s) matching",
@@ -30,7 +30,7 @@ sub run {
 
   test_out("not ok 1 - Link failure (two links that don't match)");
   test_fail(+14);
-  if ($Test::HTML::Content::can_xpath) {
+  if ($Test::HTML::Content::can_xpath eq 'XML::LibXML') {
     test_diag("Expected to find at least one <a> tag(s) matching",
               "  href = http://www.perl.com",
               "Got",
@@ -49,7 +49,7 @@ sub run {
 
   test_out("not ok 1 - Link failure (two links shouldn't exist do)");
   test_fail(+14);
-  if ($Test::HTML::Content::can_xpath) {
+  if ($Test::HTML::Content::can_xpath eq 'XML::LibXML') {
     test_diag("Expected to find no <a> tag(s) matching",
               "  href = (?-xism:.)",
               "Got",
@@ -68,7 +68,7 @@ sub run {
 
   test_out("not ok 1 - Link failure (too few links)");
   test_fail(+14);
-  if ($Test::HTML::Content::can_xpath) {
+  if ($Test::HTML::Content::can_xpath eq 'XML::LibXML') {
     test_diag("Expected to find exactly 3 <a> tag(s) matching",
               "  href = (?-xism:.)",
               "Got",
@@ -86,7 +86,7 @@ sub run {
 
   test_out("not ok 1 - Link failure (too many links)");
   test_fail(+18);
-  if ($Test::HTML::Content::can_xpath) {
+  if ($Test::HTML::Content::can_xpath eq 'XML::LibXML') {
     test_diag("Expected to find exactly 3 <a> tag(s) matching",
               "  href = (?-xism:.)",
               "Got",

@@ -1,6 +1,11 @@
 Revision history for Perl extension Test::HTML::Content.
 
-0.05 20030412
+0.06 20031222
+  - Fixed tests against XML::XPath
+  - added another test testing the internal abstraction
+    API and differences between XML::XPath and XML::LibXML
+
+0.05 20031204
   - Added XPath functionality (xpath_ok, no_xpath, xpath_count)
   - Added fallback to old functionality if neither XML::LibXML nor
     XML::XPath are available

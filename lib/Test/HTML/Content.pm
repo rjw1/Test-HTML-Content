@@ -37,7 +37,7 @@ use vars qw( $tidy );
   xpath_ok no_xpath xpath_count
   );
 
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 my $Test = Test::Builder->new;
 
@@ -273,6 +273,7 @@ sub __get_node_tree {
 
 sub __get_node_content {
   my ($node,$name) = @_;
+  
   if ($name eq '_content') {
     return $node->textContent()
   } else {
@@ -550,6 +551,8 @@ sub no_xpath {
 sub install_xpath {
   require XML::XPath;
   XML::XPath->import();
+  die "Need XML::XPath 1.13 or higher"
+    unless $XML::XPath::VERSION >= 1.13;
   $can_xpath = 'XML::XPath';
 };
 
