@@ -1,0 +1,11 @@
+Revision history for Perl extension Test::HTML::Content.
+
+0.01  Wed Sep 18 13:53:54 2002
+  - original version; created by h2xs 1.20 with options
+    -X Test::HTML
+0.02  Sun Sep 23 2002
+  - Renamed from Test::HTML to Test::HTML::Content
+  - Added warnings for the module again, if available
+  - Fixed inconsistencies between usage of 
+    HTML::Parser v2 and HTML::Parser v3 (as displayed through
+    HTML::TokeParser)

@@ -1,0 +1,10 @@
+Changes
+Content.pm
+Makefile.PL
+MANIFEST
+t/0.prerequisites.t
+t/1.internal-api.t
+t/2.tags.t
+t/3.links.t
+t/4.comments.t
+t/5.doctype.t
