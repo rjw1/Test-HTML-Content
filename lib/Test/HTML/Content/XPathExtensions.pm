@@ -10,7 +10,7 @@ use HTML::TokeParser;
 eval 'use warnings;' if ($] >= 5.006);
 use vars qw( $HTML_PARSER_StripsTags $VERSION @exports );
 
-$VERSION = '0.01';
+$VERSION = '0.08';
 
 @exports = qw( matches comment );
 

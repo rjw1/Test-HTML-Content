@@ -37,11 +37,12 @@ use vars qw( $tidy );
   xpath_ok no_xpath xpath_count
   );
 
-$VERSION = '0.07';
+$VERSION = '0.08';
 
 my $Test = Test::Builder->new;
 
-use vars qw($HTML_PARSER_StripsTags);
+use vars qw($HTML_PARSER_StripsTags $parsing_method);
+$parsing_method = 'parse_html_string';
 
 # Cribbed from the Test::Builder synopsis
 sub import {
@@ -241,7 +242,7 @@ sub __get_node_tree {
       require XML::LibXML; XML::LibXML->import;
       my $parser = XML::LibXML->new();
       $parser->recover(1);
-      $tree = $parser->parse_html_string($HTML);
+      $tree = $parser->$parsing_method($HTML);
       $find = 'findnodes';
       $HTML_PARSER_StripsTags = 1;
     };
