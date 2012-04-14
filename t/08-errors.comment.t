@@ -13,6 +13,10 @@ if ($@) {
   plan skip_all => "Test::Builder::Tester required for testing error messages";
 }
 
+# perldelta 5.14
+# Accept both old and new-style stringification
+my $modifiers = (qr/foobar/ =~ /\Q(?^/) ? "^" : "-xism";
+
 sub run {
  # Test that each exported function fails as documented
 
@@ -48,7 +52,7 @@ sub run {
    #} else {
      test_diag("Saw '<!-- hidden massage -->'",
                "Saw '<!-- hidden massage -->'",
-               "Expected no comment like '(?-xism:hidden m.ssage)'");
+               "Expected no comment like '(?$modifiers:hidden m.ssage)'");
    #};
  no_comment("<!-- hidden massage --><!-- hidden massage -->",
          qr"hidden m.ssage","Comment failure (two comments that shouldn't exist do)");
@@ -61,7 +65,7 @@ sub run {
    #} else {
      test_diag("Saw '<!-- hidden massage -->'",
                "Saw '<!-- hidden massage -->'",
-               "Expected exactly 3 comments like '(?-xism:hidden m.ssage)'");
+               "Expected exactly 3 comments like '(?$modifiers:hidden m.ssage)'");
    #};
  comment_count("<!-- hidden massage --><!-- hidden massage -->",
          qr"hidden m.ssage",3,"Comment failure (too few comments)");
@@ -74,7 +78,7 @@ sub run {
    #} else {
      test_diag("Saw '<!-- hidden massage -->'",
                "Saw '<!-- hidden massage -->'",
-               "Expected exactly 1 comments like '(?-xism:hidden m.ssage)'");
+               "Expected exactly 1 comments like '(?$modifiers:hidden m.ssage)'");
    #};
  comment_count("<!-- hidden massage --><!-- hidden massage -->",
          qr"hidden m.ssage",1,"Comment failure (too few comments)");

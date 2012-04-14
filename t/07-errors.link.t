@@ -14,6 +14,10 @@ BEGIN {
   }
 };
 
+# perldelta 5.14
+# Accept both old and new-style stringification
+my $modifiers = (qr/foobar/ =~ /\Q(?^/) ? "^" : "-xism";
+
 sub run {
   # Test that each exported function fails as documented
   test_out("not ok 1 - Link failure (no links)");
@@ -51,13 +55,13 @@ sub run {
   test_fail(+14);
   if ($Test::HTML::Content::can_xpath eq 'XML::LibXML') {
     test_diag("Expected to find no <a> tag(s) matching",
-              "  href = (?-xism:.)",
+              "  href = (?$modifiers:.)",
               "Got",
               '  <a href="http://www.foo.com">foo</a>',
               '  <a href="index.html">Home</a>');
   } else {
     test_diag("Expected to find no <a> tag(s) matching",
-              "  href = (?-xism:.)",
+              "  href = (?$modifiers:.)",
               "Got",
               "  <a href='http://www.foo.com'>",
               "  <a href='index.html'>");
@@ -70,13 +74,13 @@ sub run {
   test_fail(+14);
   if ($Test::HTML::Content::can_xpath eq 'XML::LibXML') {
     test_diag("Expected to find exactly 3 <a> tag(s) matching",
-              "  href = (?-xism:.)",
+              "  href = (?$modifiers:.)",
               "Got",
               '  <a href="http://www.foo.com">foo</a>',
               '  <a href="index.html">Home</a>');
   } else {
     test_diag("Expected to find exactly 3 <a> tag(s) matching",
-              "  href = (?-xism:.)",
+              "  href = (?$modifiers:.)",
               "Got",
               "  <a href='http://www.foo.com'>",
               "  <a href='index.html'>");
@@ -88,7 +92,7 @@ sub run {
   test_fail(+18);
   if ($Test::HTML::Content::can_xpath eq 'XML::LibXML') {
     test_diag("Expected to find exactly 3 <a> tag(s) matching",
-              "  href = (?-xism:.)",
+              "  href = (?$modifiers:.)",
               "Got",
               '  <a href="http://www.bar.com">bar</a>',
               '  <a href="http://www.dot.com">.</a>',
@@ -96,7 +100,7 @@ sub run {
               '  <a href="index.html">Home</a>');
   } else {
     test_diag("Expected to find exactly 3 <a> tag(s) matching",
-              "  href = (?-xism:.)",
+              "  href = (?$modifiers:.)",
               "Got",
               "  <a href='http://www.bar.com'>",
               "  <a href='http://www.dot.com'>",
