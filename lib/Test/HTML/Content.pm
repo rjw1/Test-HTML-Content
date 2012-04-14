@@ -241,7 +241,7 @@ sub __get_node_tree {
     eval {
       require XML::LibXML; XML::LibXML->import;
       my $parser = XML::LibXML->new();
-      $parser->recover(1);
+      $parser->recover(2);
       $tree = $parser->$parsing_method($HTML);
       $find = 'findnodes';
       $HTML_PARSER_StripsTags = 1;
